@@ -1,8 +1,36 @@
 # Universal Windows Platform
+- task: PowerShell@2
+  inputs:
+    targetType: 'inline'
+    script: |
+      # Set agent screen resolution to 1920x1080 to avoid sizing issues with Portal  
+      Set-DisplayResolution -Width 1920 -Height 1080 -Force
+      # Wait 10 seconds  
+- task: NuGetCommand@2
+  inputs:
+    command: 'restore'
+    restoreSolution: '**/*.sln'
+    feedsToUse: 'select'
+      Start-Sleep -s 10
+      # Verify Screen Resolution is set to 1920x1080  
+      Get-DisplayResolution
 # Build a Universal Windows Platform project using Visual Studio.
 # Add steps that test and distribute an app, save build artifacts, and more:
 # https://aka.ms/yaml
-
+- task: NuGetCommand@2
+  inputs:
+    command: 'restore'
+    restoreSolution: '**/*.sln'
+- task: VSTest@3
+  inputs:
+    testSelector: 'testAssemblies'
+    testAssemblyVer2: '**\Microsoft.PowerApps.TestAutomation.Tests\bin\\Debug\Microsoft.PowerApps.TestAutomation.Tests.dll'
+    searchFolder: '$(System.DefaultWorkingDirectory)'
+    testFiltercriteria: 'TestCategory=PowerAppsTestAutomation'
+    uiTests: true
+    overrideTestrunParameters: '-OnlineUsername "$(OnlineUsername)" -OnlinePassword "$(OnlinePassword)" -BrowserType "$(BrowserTypeFirefox)" -OnlineUrl "$(OnlineUrl)" -UsePrivateMode "$(UsePrivateMode)" -TestAutomationURLFilePath "$(TestAutomationURLFilePath)" -DriversPath "$(GeckoWebDriver)"'
+    testRunTitle: 'Executar Testes de Automação de Teste do Power Apps via $(BrowserTypeFirefox)'
+    feedsToUse: 'select'
 trigger:
 - master
 
